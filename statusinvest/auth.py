@@ -13,12 +13,15 @@ USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Ge
 
 
 class Auth(metaclass=SingletonMeta):
-    def __init__(self, email: str, password: str) -> None:
+    def __init__(self, email: str, password: str, token: str = None) -> None:
         self.email = email
         self.password = password
-        self.token = None
+        self.token = token
 
     def login(self) -> str:
+        if self.token:
+            return self.token
+
         response = requests.post(f'{STATUS_INVEST_BASE_URL}{LOGIN_ENDPOINT}', headers={
             'Content-type': 'application/x-www-form-urlencoded',
             'user-agent': USER_AGENT,
@@ -50,6 +53,6 @@ class Auth(metaclass=SingletonMeta):
 
     @staticmethod
     def from_env():
-        auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
+        auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'), os.getenv('TOKEN'))
         auth.login()
         return auth

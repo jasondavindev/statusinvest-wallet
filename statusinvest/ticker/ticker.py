@@ -13,11 +13,15 @@ ADVANCED_URL = '/category/advancedsearchresult'
 
 class Ticker(metaclass=SingletonMeta):
     def __init__(self) -> None:
+        print('Building tickers')
         self.fiis = None
 
     @cached_property
     def get_fiis(self):
         search_params = '?search={}&CategoryType=2'
+
+        print('Searching FIIs')
+
         response = requests.get(
             f'{STATUS_INVEST_BASE_URL}{ADVANCED_URL}{search_params}',
             headers=Auth.from_env().auth_headers,
@@ -31,7 +35,8 @@ class Ticker(metaclass=SingletonMeta):
         return self.fiis
 
     def new(self, ticker: str, category: str):
-        if category in ['acoes', 'bdr']:
+        if category in ['acao', 'bdr']:
+            print(f'Building Stock ticker={ticker}')
             return StockTicker.new(ticker, category)
 
         if category == 'fiis':
