@@ -1,23 +1,27 @@
-from functools import cached_property
+import os
 import re
+from functools import cached_property
 from typing import Dict
 
 import requests
 
 from statusinvest.base import STATUS_INVEST_BASE_URL
+from statusinvest.utils.singleton import SingletonMeta
 
 LOGIN_ENDPOINT = '/account/login'
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'
 
 
-class Auth:
+class Auth(metaclass=SingletonMeta):
     def __init__(self, email: str, password: str) -> None:
         self.email = email
         self.password = password
         self.token = None
 
-    def login(self, ) -> str:
+    def login(self) -> str:
         response = requests.post(f'{STATUS_INVEST_BASE_URL}{LOGIN_ENDPOINT}', headers={
-            'Content-type': 'application/x-www-form-urlencoded'
+            'Content-type': 'application/x-www-form-urlencoded',
+            'user-agent': USER_AGENT,
         }, data={
             'Email': self.email,
             'Password': self.password,
@@ -40,5 +44,12 @@ class Auth:
     @cached_property
     def auth_headers(self) -> Dict[str, str]:
         return {
-            'cookie': f'.StatusInvest={self.token};'
+            'cookie': f'.StatusInvest={self.token};',
+            'user-agent': USER_AGENT,
         }
+
+    @staticmethod
+    def from_env():
+        auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'))
+        auth.login()
+        return auth

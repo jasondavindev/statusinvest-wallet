@@ -1,9 +1,8 @@
-from datetime import datetime
-
 import requests
 
 from statusinvest.auth import Auth
 from statusinvest.base import STATUS_INVEST_BASE_URL
+from statusinvest.wallet.earning import Earning
 
 CONSOLIDATED_EARNINGS_ENDPOINT = '/AdmWallet/AssetEarningResult'
 EARNINGS_BY_PERIOD_ENDPOINT = '/admwallet/allearningresult'
@@ -15,29 +14,14 @@ EARNING_PERIODS = {
 }
 
 
-class Earning:
-    def __init__(self, row) -> None:
-        self.code = row['code']
-        self.name = row['name']
-        self.date_com_raw = row['dateCom']
-        self.date_com = datetime.fromisoformat(row['dateCom'])
-        self.payment_date_raw = row['paymentDate']
-        self.payment_date = datetime.fromisoformat(row['paymentDate'])
-        self.quantity = row['quantity']
-        self.unit_value = row['unitValue']
-        self.total_value = row['totalValue']
-        self.dividend_type_name = row['dividendTypeName']
-        self.category_name = row['categoryName']
-
-
-class WalletEarnings(Auth):
+class WalletEarnings:
     def __init__(self) -> None:
         self.earnings = {}
 
     def consolidated_earnings(self):
         response = requests.post(
             url=f'{STATUS_INVEST_BASE_URL}{CONSOLIDATED_EARNINGS_ENDPOINT}',
-            headers=self.auth_headers,
+            headers=Auth.from_env().auth_headers,
         )
 
         return response.json()
@@ -52,7 +36,7 @@ class WalletEarnings(Auth):
 
         response = requests.post(
             url=f'{STATUS_INVEST_BASE_URL}{EARNINGS_BY_PERIOD_ENDPOINT}',
-            headers=self.auth_headers,
+            headers=Auth.from_env().auth_headers,
             data=data,
         )
 
