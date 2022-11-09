@@ -43,11 +43,13 @@ class Assets:
             'name',
             'unitValue',
             'price',
+            'profitabilityPercent',
             'quantity',
             'segment',
         ]
 
         fields_getter = attrgetter(*fields)
+        def conversion(x): return round(x, 2) if isinstance(x, float) else x
 
         extra_fields = ['pL', 'pVP', 'dY'] if category in ['acao', 'bdr'] \
             else ['pVP', 'dY']
@@ -58,7 +60,7 @@ class Assets:
         assets_with_ticker = map(lambda asset: asset.populate_ticker(), assets)
 
         assets_to_dict = map(lambda asset: dict(
-            zip(fields, fields_getter(asset) + asset.get_metrics())
+            zip(fields, map(conversion, fields_getter(asset) + asset.get_metrics()))
         ), assets_with_ticker)
 
         sorted_assets = sorted(assets_to_dict, key=sort_getter)
