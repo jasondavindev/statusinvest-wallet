@@ -39,6 +39,7 @@ class Auth(metaclass=SingletonMeta):
         login_token_cookie = login_token_cookie[0]
 
         token = re.search('StatusInvest=(.*)', login_token_cookie).group(1)
+        print(f'Auth token={token}')
 
         self.token = token
 
@@ -53,6 +54,8 @@ class Auth(metaclass=SingletonMeta):
 
     @staticmethod
     def from_env():
-        auth = Auth(os.getenv('EMAIL'), os.getenv('PASSWORD'), os.getenv('TOKEN'))
+        auth = Auth(
+            os.getenv('EMAIL'), os.getenv('PASSWORD'), os.getenv('TOKEN')
+        )
         auth.login()
         return auth

@@ -1,3 +1,6 @@
+import csv
+from operator import attrgetter
+
 import requests
 
 from statusinvest.auth import Auth
@@ -15,8 +18,7 @@ EARNING_PERIODS = {
 
 
 class WalletEarnings:
-    def __init__(self) -> None:
-        self.earnings = {}
+    earnings = {}
 
     def consolidated_earnings(self):
         response = requests.post(
@@ -43,13 +45,41 @@ class WalletEarnings:
         json_response = response.json()
 
         earnings_raw = json_response['data'][0]['list']
-        total = json_response['data'][0]['total']
 
-        earnings = [Earning(earning) for earning in earnings_raw]
+        earnings = list(map(lambda earning: Earning(earning), earnings_raw))
 
-        self.earnings[period] = {
-            'total': total,
-            'earnings': earnings,
-        }
+        self.earnings[period] = earnings
 
-        return total, earnings
+    def export(self):
+        with open('data/earnings.csv', 'w') as csv_file:
+            fields = [
+                'period',
+                'code',
+                'name',
+                'date_com',
+                'payment_date',
+                'quantity',
+                'unit_value',
+                'total_value',
+                'dividend_type_name',
+                'category_name',
+            ]
+
+            writer = csv.DictWriter(csv_file, fields)
+            writer.writeheader()
+            getter = attrgetter(*fields[1:])
+
+            for period, earnings in self.earnings.items():
+                rows = map(
+                    lambda earning: dict(
+                        zip(fields, (period,) + getter(earning))
+                    ), earnings
+                )
+                sorted_rows = sorted(rows, key=lambda row: row['payment_date'])
+                writer.writerows(sorted_rows)
+
+
+if __name__ == '__main__':
+    wallet = WalletEarnings()
+    wallet.earnings_by_period()
+    wallet.export()
