@@ -72,6 +72,12 @@ class Assets:
 
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--type', choices=['fiis', 'acao', 'bdr'])
+    args = parser.parse_args()
+
     assets = Assets()
     assets.get_assets()
-    assets.export('acoes')
+    assets.export(args.type)
